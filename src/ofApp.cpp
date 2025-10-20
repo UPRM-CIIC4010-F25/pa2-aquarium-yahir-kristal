@@ -8,6 +8,10 @@ void ofApp::setup(){
     backgroundImage.load("background.png");
     backgroundImage.resize(ofGetWindowWidth(), ofGetWindowHeight());
 
+    music.load("tainy_J_Balvin_Agua.mp3");
+    music.setLoop(true);
+    music.setVolume(0.7f);
+    music.play();
 
     std::shared_ptr<Aquarium> myAquarium;
     std::shared_ptr<PlayerCreature> player;

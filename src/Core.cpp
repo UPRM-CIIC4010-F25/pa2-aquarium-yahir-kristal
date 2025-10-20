@@ -12,7 +12,20 @@ void Creature::normalize() {
 }
 
 void Creature::bounce() {
-    // should implement boundary controls here
+    
+    if (m_x <= m_collisionRadius || m_x >= m_width - m_collisionRadius){
+        m_dx *= -1;
+        m_x = ofClamp(m_x, m_collisionRadius, m_width - m_collisionRadius);
+        setFlipped(m_dx < 0);
+    }
+
+    if (m_y <= m_collisionRadius || m_y >= m_height - m_collisionRadius) {
+        m_dy *= -1; // invierte la dirección en Y
+        m_y = ofClamp(m_y, m_collisionRadius, m_height - m_collisionRadius);
+    }
+
+
+
 }
 
 
