@@ -36,11 +36,20 @@ void PlayerCreature::reduceDamageDebounce() {
     }
 }
 
+//This is a simple bump, this flips the direction and nudges away so the sprites separates.
+void PlayerCreature::bump(){
+    m_dx = -m_dx;
+    m_dy = -m_dy;
+
+    //moves the direction to avoid sticking
+    m_x += m_dx * m_speed * 2.00;
+    m_y += m_dy * m_speed * 2.00;
+}
+
 void PlayerCreature::update() {
     this->reduceDamageDebounce();
     this->move();
 }
-
 
 void PlayerCreature::draw() const {
     
@@ -264,55 +273,61 @@ std::shared_ptr<GameEvent> DetectAquariumCollisions(std::shared_ptr<Aquarium> aq
     if (!aquarium || !player) return nullptr;
     
     for (int i = 0; i < aquarium->getCreatureCount(); ++i) {
-        std::shared_ptr<Creature> npc = aquarium->getCreatureAt(i);
-        if (npc && checkCollision(player, npc)) {
-            return std::make_shared<GameEvent>(GameEventType::COLLISION, player, npc);
+        auto creature = aquarium->getCreatureAt(i);
+        if(creature && creature != player && checkCollision(player, creature)){
+            return std::make_shared<GameEvent>(GameEventType::COLLISION, player, creature);
         }
     }
     return nullptr;
 };
 
-//  Imlementation of the AquariumScene
-
-void AquariumGameScene::Update(){
+void AquariumGameScene::Update() {
     std::shared_ptr<GameEvent> event;
+    m_player->update();
 
-    this->m_player->update();
+    if (updateControl.tick()) {
+        // find a collision between player and any creature
+        event = DetectAquariumCollisions(m_aquarium, m_player);
 
-    if (this->updateControl.tick()) {
-        event = DetectAquariumCollisions(this->m_aquarium, this->m_player);
-        if (event != nullptr && event->isCollisionEvent()) {
+        if (event && event->isCollisionEvent()) {
             ofLogVerbose() << "Collision detected between player and NPC!" << std::endl;
-            if(event->creatureB != nullptr){
+
+            if (event->creatureB) {
                 event->print();
-                if(this->m_player->getPower() < event->creatureB->getValue()){
+
+                // If player is weaker -> take damage and bounce back
+                if (m_player->getPower() < event->creatureB->getValue()) {
                     ofLogNotice() << "Player is too weak to eat the creature!" << std::endl;
-                    this->m_player->loseLife(3*60); // 3 frames debounce, 3 seconds at 60fps
-                    if(this->m_player->getLives() <= 0){
-                        this->m_lastEvent = std::make_shared<GameEvent>(GameEventType::GAME_OVER, this->m_player, nullptr);
+
+                    m_player->loseLife(3 * 60);  // 3 seconds
+                    m_player->bump();            // visible bounce / separation
+
+                    if (m_player->getLives() <= 0) {
+                        m_lastEvent = std::make_shared<GameEvent>(
+                            GameEventType::GAME_OVER, m_player, nullptr);
                         return;
                     }
-                }
-                else{
-                    this->m_aquarium->removeCreature(event->creatureB);
-                    this->m_player->addToScore(1, event->creatureB->getValue());
-                    if (this->m_player->getScore() % 25 == 0){
-                        this->m_player->increasePower(1);
-                        ofLogNotice() << "Player power increased to " << this->m_player->getPower() << "!" << std::endl;
-                    }
-                    
-                }
-                
-                
+                } else {
+                    // Player strong enough -> eat it and score
+                    m_aquarium->removeCreature(event->creatureB);
+                    m_player->addToScore(1, event->creatureB->getValue());
 
+                    if (m_player->getScore() % 25 == 0) {
+                        m_player->increasePower(1);
+                        ofLogNotice() << "Player power increased to "
+                                      << m_player->getPower() << "!" << std::endl;
+                    }
+                }
             } else {
                 ofLogError() << "Error: creatureB is null in collision event." << std::endl;
             }
         }
-        this->m_aquarium->update();
-    }
 
+        // No power-ups: keep your original aquarium update
+        m_aquarium->update();
+    }
 }
+
 
 void AquariumGameScene::Draw() {
     this->m_player->draw();
