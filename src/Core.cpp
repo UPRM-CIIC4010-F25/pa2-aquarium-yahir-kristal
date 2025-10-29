@@ -20,7 +20,7 @@ void Creature::bounce() {
     }
 
     if (m_y <= m_collisionRadius || m_y >= m_height - m_collisionRadius) {
-        m_dy *= -1; // invierte la dirección en Y
+        m_dy *= -1; 
         m_y = ofClamp(m_y, m_collisionRadius, m_height - m_collisionRadius);
     }
 

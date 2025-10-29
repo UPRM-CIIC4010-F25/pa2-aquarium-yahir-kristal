@@ -8,6 +8,8 @@ string AquariumCreatureTypeToString(AquariumCreatureType t){
             return "BiggerFish";
         case AquariumCreatureType::NPCreature:
             return "BaseFish";
+        case AquariumCreatureType::Octopus:
+            return "Octopus";
         default:
             return "UknownFish";
     }
@@ -131,11 +133,47 @@ void BiggerFish::draw() const {
     this->m_sprite->draw(this->m_x, this->m_y);
 }
 
+// Octopus
+
+Octopus::Octopus(float x, float y, int speed, std::shared_ptr<GameSprite> sprite) 
+: NPCreature (x, y, speed, sprite) {
+    m_dx = (rand() % 3 - 1);
+    m_dy = (rand() % 3 - 1);
+    normalize();
+
+    setCollisionRadius(70);
+    m_value = 8;
+    m_creatureType = AquariumCreatureType:: Octopus;
+}
+
+// Move
+
+void Octopus::move(){
+    m_x += m_dx * (m_speed + 5);
+    m_y += m_dy * (m_speed + 5);
+
+    if(m_dx < 0){
+        this->m_sprite->setFlipped(true);
+    } else {
+        this->m_sprite->setFlipped(false);
+    }
+
+    bounce();
+}
+
+// DrAW
+
+void Octopus:: draw() const {
+    ofLogVerbose() << "Octopuse at (" << m_x << ", " << m_y << ") with speed " << m_speed << std::endl;
+    this->m_sprite->draw(this->m_x, this->m_y);
+} 
 
 // AquariumSpriteManager
 AquariumSpriteManager::AquariumSpriteManager(){
     this->m_npc_fish = std::make_shared<GameSprite>("base-fish.png", 70,70);
     this->m_big_fish = std::make_shared<GameSprite>("bigger-fish.png", 120, 120);
+    this->m_octopus = std::make_shared<GameSprite>("pokemonX.png", 100, 100);
+
 }
 
 std::shared_ptr<GameSprite> AquariumSpriteManager::GetSprite(AquariumCreatureType t){
@@ -145,6 +183,8 @@ std::shared_ptr<GameSprite> AquariumSpriteManager::GetSprite(AquariumCreatureTyp
             
         case AquariumCreatureType::NPCreature:
             return std::make_shared<GameSprite>(*this->m_npc_fish);
+        case AquariumCreatureType::Octopus:
+            return std::make_shared<GameSprite>(*this->m_octopus);
         default:
             return nullptr;
     }
@@ -218,6 +258,9 @@ void Aquarium::SpawnCreature(AquariumCreatureType type) {
             break;
         case AquariumCreatureType::BiggerFish:
             this->addCreature(std::make_shared<BiggerFish>(x, y, speed, this->m_sprite_manager->GetSprite(AquariumCreatureType::BiggerFish)));
+            break;
+        case AquariumCreatureType::Octopus:
+            this->addCreature(std::make_shared<Octopus>(x, y, speed, this->m_sprite_manager->GetSprite(AquariumCreatureType::Octopus)));
             break;
         default:
             ofLogError() << "Unknown creature type to spawn!";
