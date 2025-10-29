@@ -52,6 +52,7 @@ public:
     void move();
     void draw() const;
     void update();
+    void bump();
     void changeSpeed(int speed);
     void setLives(int lives) { m_lives = lives; }
     void setDirection(float dx, float dy);
