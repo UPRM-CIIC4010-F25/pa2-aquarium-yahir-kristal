@@ -25,7 +25,7 @@ Grading
 | Student Number | Student Name | Student Email |
 |-|-|-|
 |(802-22-1762)| (Yahir A. Torres Galarza)| (yahir.torres1@upr.edu) |
-|(STUDENT NUMBER HERE)| (STUDENT NAME HERE)| (STUDENT EMAIL HERE) |
+|(802-19-8559)| (Krystal Perez Soler)| (krystal.perez11@upr.edu) |
 
 ---
 
