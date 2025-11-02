@@ -11,7 +11,8 @@ enum class AquariumCreatureType {
     NPCreature,
     BiggerFish,
     Octopus,
-    Shark
+    Shark,
+    Fish
 };
 
 string AquariumCreatureTypeToString(AquariumCreatureType t);
@@ -140,6 +141,13 @@ public:
     }
 };
 
+class Fish : public NPCreature{
+    public:
+        Fish(float x, float y, int speed, std::shared_ptr<GameSprite> sprite);
+        void move() override;
+        void draw() const override;
+};
+
 
 class AquariumSpriteManager {
     public:
@@ -151,6 +159,7 @@ class AquariumSpriteManager {
         std::shared_ptr<GameSprite> m_big_fish;
         std::shared_ptr<GameSprite> m_octopus;
         std::shared_ptr<GameSprite> m_shark;
+        std::shared_ptr<GameSprite> m_fish;
 };
 
 
@@ -218,6 +227,7 @@ class Level_0 : public AquariumLevel  {
     public:
         Level_0(int levelNumber, int targetScore): AquariumLevel(levelNumber, targetScore){
             this->m_levelPopulation.push_back(std::make_shared<AquariumLevelPopulationNode>(AquariumCreatureType::NPCreature, 10));
+            this->m_levelPopulation.push_back(std::make_shared<AquariumLevelPopulationNode>(AquariumCreatureType::Fish, 5));
            
 
         };
