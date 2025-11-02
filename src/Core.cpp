@@ -13,14 +13,15 @@ void Creature::normalize() {
 
 void Creature::bounce() {
     //the left and right walls
-    if(m_x <= 0 || m_x >= m_width){
+       if (m_x <= 0 || m_x >= m_width) {
         m_dx = -m_dx;
         m_x = glm::clamp(m_x, 0.0f, static_cast<float>(m_width));
     }
-    //top and bottom walls
-    if(m_y <= 0 || m_y >= m_height){
+
+    // Top and bottom walls
+    if (m_y <= 0 || m_y >= m_height) {
         m_dy = -m_dy;
-         m_x = glm::clamp(m_x, 0.0f, static_cast<float>(m_height));
+        m_y = glm::clamp(m_y, 0.0f, static_cast<float>(m_height)); // ✅ corregido
     }
 }
 

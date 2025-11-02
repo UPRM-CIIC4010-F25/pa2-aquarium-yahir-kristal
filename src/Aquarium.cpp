@@ -158,16 +158,28 @@ Octopus::Octopus(float x, float y, int speed, std::shared_ptr<GameSprite> sprite
 // Move
 
 void Octopus::move(){
-    m_x += m_dx * (m_speed + 5);
-    m_y += m_dy * (m_speed + 5);
-
-    if(m_dx < 0){
-        this->m_sprite->setFlipped(true);
-    } else {
-        this->m_sprite->setFlipped(false);
+    
+    // diagonal move 
+    if (m_dx == 0 || m_dy == 0) {
+        do {
+            m_dx = (rand() % 3 - 1); 
+            m_dy = (rand() % 3 - 1);
+        } while (m_dx == 0 || m_dy == 0); 
+        normalize();
     }
 
+    // speed increase
+    m_x += m_dx * (m_speed + 15);
+    m_y += m_dy * (m_speed + 15);
+
+   
     bounce();
+
+    // Flip
+    if (m_dx < 0)
+        m_sprite->setFlipped(true);
+    else
+        m_sprite->setFlipped(false);
 }
 
 // DrAW
@@ -182,6 +194,7 @@ AquariumSpriteManager::AquariumSpriteManager(){
     this->m_npc_fish = std::make_shared<GameSprite>("base-fish.png", 70,70);
     this->m_big_fish = std::make_shared<GameSprite>("bigger-fish.png", 120, 120);
     this->m_octopus = std::make_shared<GameSprite>("pokemonX.png", 100, 100);
+    this->m_shark = std::make_shared<GameSprite>("shark.png", 120,120);
 
 }
 
@@ -194,6 +207,8 @@ std::shared_ptr<GameSprite> AquariumSpriteManager::GetSprite(AquariumCreatureTyp
             return std::make_shared<GameSprite>(*this->m_npc_fish);
         case AquariumCreatureType::Octopus:
             return std::make_shared<GameSprite>(*this->m_octopus);
+        case AquariumCreatureType::Shark:
+            return std::make_shared<GameSprite>(*this->m_shark);
         default:
             return nullptr;
     }
@@ -328,6 +343,15 @@ void AquariumGameScene::Update() {
     std::shared_ptr<GameEvent> event;
     m_player->update();
 
+static bool playerTransformed = false; 
+    if (!playerTransformed && m_player->getScore() >= 50) {
+        auto shark = std::make_shared<Shark>(*m_player,m_aquarium->GetSpriteManager()->GetSprite(AquariumCreatureType::Shark));
+
+        m_player = shark;  
+        playerTransformed = true;
+        ofLogNotice() << "Player transformed into Shark!" << std::endl;
+    }
+
     if (updateControl.tick()) {
         // find a collision between player and any creature
         event = DetectAquariumCollisions(m_aquarium, m_player);
@@ -343,8 +367,7 @@ void AquariumGameScene::Update() {
                     ofLogNotice() << "Player is too weak to eat the creature!" << std::endl;
 
                     m_player->loseLife(3 * 60);  // 3 seconds
-                    m_player->bump();            // visible bounce / separation
-
+                   
                     if (m_player->getLives() <= 0) {
                         m_lastEvent = std::make_shared<GameEvent>(
                             GameEventType::GAME_OVER, m_player, nullptr);
@@ -366,7 +389,7 @@ void AquariumGameScene::Update() {
             }
         }
 
-        // No power-ups: keep your original aquarium update
+
         m_aquarium->update();
     }
 }
@@ -419,48 +442,3 @@ bool AquariumLevel::isCompleted(){
 }
 
 
-
-
-std::vector<AquariumCreatureType> Level_0::Repopulate() {
-    std::vector<AquariumCreatureType> toRepopulate;
-    for(std::shared_ptr<AquariumLevelPopulationNode> node : this->m_levelPopulation){
-        int delta = node->population - node->currentPopulation;
-        ofLogVerbose() << "to Repopulate :  " << delta << endl;
-        if(delta >0){
-            for(int i = 0; i<delta; i++){
-                toRepopulate.push_back(node->creatureType);
-            }
-            node->currentPopulation += delta;
-        }
-    }
-    return toRepopulate;
-
-}
-
-std::vector<AquariumCreatureType> Level_1::Repopulate() {
-    std::vector<AquariumCreatureType> toRepopulate;
-    for(std::shared_ptr<AquariumLevelPopulationNode> node : this->m_levelPopulation){
-        int delta = node->population - node->currentPopulation;
-        if(delta >0){
-            for(int i=0; i<delta; i++){
-                toRepopulate.push_back(node->creatureType);
-            }
-            node->currentPopulation += delta;
-        }
-    }
-    return toRepopulate;
-}
-
-std::vector<AquariumCreatureType> Level_2::Repopulate() {
-    std::vector<AquariumCreatureType> toRepopulate;
-    for(std::shared_ptr<AquariumLevelPopulationNode> node : this->m_levelPopulation){
-        int delta = node->population - node->currentPopulation;
-        if(delta >0){
-            for(int i=0; i<delta; i++){
-                toRepopulate.push_back(node->creatureType);
-            }
-            node->currentPopulation += delta;
-        }
-    }
-    return toRepopulate;
-}
