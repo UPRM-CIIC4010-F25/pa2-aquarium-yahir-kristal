@@ -265,3 +265,32 @@ class Level_3 : public AquariumLevel  {
         
 };
 
+//New Levels
+class Level_4 : public AquariumLevel {
+    public:
+        Level_4(int levelNumber, int targetScore): AquariumLevel(levelNumber, targetScore){
+
+            this->m_levelPopulation.push_back(std::make_shared<AquariumLevelPopulationNode>(AquariumCreatureType::NPCreature, 18));
+            this->m_levelPopulation.push_back(std::make_shared<AquariumLevelPopulationNode>(AquariumCreatureType::Fish, 12));
+            this->m_levelPopulation.push_back(std::make_shared<AquariumLevelPopulationNode>(AquariumCreatureType::BiggerFish, 3));
+        }
+};
+
+class Level_5 : public AquariumLevel  {
+public:
+    Level_5(int levelNumber, int targetScore): AquariumLevel(levelNumber, targetScore) {
+        this->m_levelPopulation.push_back(std::make_shared<AquariumLevelPopulationNode>(AquariumCreatureType::NPCreature, 15));
+        this->m_levelPopulation.push_back(std::make_shared<AquariumLevelPopulationNode>(AquariumCreatureType::Fish, 16));
+        this->m_levelPopulation.push_back(std::make_shared<AquariumLevelPopulationNode>(AquariumCreatureType::BiggerFish, 6));
+    }
+
+    // Light progression: when halfway to target, bias toward more BiggerFish
+    std::vector<AquariumCreatureType> Repopulate() override {
+        auto out = AquariumLevel::Repopulate();
+        if (m_level_score > m_targetScore / 2) {
+            out.push_back(AquariumCreatureType::BiggerFish);
+            if (rand() % 3 == 0) out.push_back(AquariumCreatureType::BiggerFish);
+        }
+        return out;
+    }
+};
